@@ -4,26 +4,18 @@ import m from 'mithril';
 import mixpanel from 'mixpanel-browser';
 
 import app from 'state';
-import { formatCoin } from 'adapters/currency';
-import { formatDuration, blockperiodToDuration } from 'helpers';
+import { blockperiodToDuration } from 'helpers';
 import { ProposalType } from 'identifiers';
 import { ChainClass, ChainBase } from 'models';
 import Edgeware from 'controllers/chain/edgeware/main';
-import {
-  convictionToWeight, convictionToLocktime, convictions
-} from 'controllers/chain/substrate/democracy_referendum';
 import Sublayout from 'views/sublayout';
 import PageLoading from 'views/pages/loading';
-import ConvictionsTable from 'views/components/proposals/convictions_table';
-import ProposalsLoadingRow from 'views/components/proposals_loading_row';
 import ProposalRow from 'views/components/proposal_row';
 import { CountdownUntilBlock } from 'views/components/countdown';
 import Substrate from 'controllers/chain/substrate/main';
 import Cosmos from 'controllers/chain/cosmos/main';
 import Moloch from 'controllers/chain/ethereum/moloch/adapter';
-import NewProposalPage from 'views/pages/new_proposal/index';
-import { Grid, Col, List } from 'construct-ui';
-import moment from 'moment';
+import { Grid, Col } from 'construct-ui';
 import Listing from './listing';
 
 const SubstrateProposalStats: m.Component<{}, {}> = {
@@ -119,7 +111,7 @@ const ProposalsPage: m.Component<{}> = {
       && !activeCosmosProposals?.length
       && !activeMolochProposals?.length
       ? [ m('.no-proposals', 'None') ]
-      : (activeDemocracyProposals || []).map((proposal) => m(ProposalRow, { proposal }))
+      : (activeDemocracyProposals || []).map((proposal) => m(ProposalRow, { proposal, title: true }))
         .concat((activeCouncilProposals || []).map((proposal) => m(ProposalRow, { proposal })))
         .concat((activeSignalingProposals || []).map((proposal) => m(ProposalRow, { proposal })))
         .concat((activeCosmosProposals || []).map((proposal) => m(ProposalRow, { proposal })))
@@ -146,7 +138,7 @@ const ProposalsPage: m.Component<{}> = {
       && !inactiveCosmosProposals?.length
       && !inactiveMolochProposals?.length
       ? [ m('.no-proposals', 'None') ]
-      : (inactiveDemocracyProposals || []).map((proposal) => m(ProposalRow, { proposal }))
+      : (inactiveDemocracyProposals || []).map((proposal) => m(ProposalRow, { proposal, title: true }))
         .concat((inactiveCouncilProposals || []).map((proposal) => m(ProposalRow, { proposal })))
         .concat((inactiveSignalingProposals || []).map((proposal) => m(ProposalRow, { proposal })))
         .concat((inactiveCosmosProposals || []).map((proposal) => m(ProposalRow, { proposal })))

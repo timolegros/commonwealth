@@ -4,26 +4,15 @@ import m from 'mithril';
 import mixpanel from 'mixpanel-browser';
 
 import app from 'state';
-import { formatCoin } from 'adapters/currency';
-import { formatDuration, blockperiodToDuration } from 'helpers';
+import { blockperiodToDuration } from 'helpers';
 import { ProposalType } from 'identifiers';
-import { ChainClass, ChainBase } from 'models';
-import Edgeware from 'controllers/chain/edgeware/main';
-import {
-  convictionToWeight, convictionToLocktime, convictions
-} from 'controllers/chain/substrate/democracy_referendum';
+import { ChainBase } from 'models';
 import Sublayout from 'views/sublayout';
 import PageLoading from 'views/pages/loading';
-import ConvictionsTable from 'views/components/proposals/convictions_table';
-import ProposalsLoadingRow from 'views/components/proposals_loading_row';
 import ProposalRow from 'views/components/proposal_row';
 import { CountdownUntilBlock } from 'views/components/countdown';
 import Substrate from 'controllers/chain/substrate/main';
-import Cosmos from 'controllers/chain/cosmos/main';
-import Moloch from 'controllers/chain/ethereum/moloch/adapter';
-import NewProposalPage from 'views/pages/new_proposal/index';
-import { Grid, Col, List } from 'construct-ui';
-import moment from 'moment';
+import { Grid, Col } from 'construct-ui';
 import Listing from './listing';
 
 const SubstrateProposalStats: m.Component<{}, {}> = {
@@ -84,14 +73,14 @@ const ReferendaPage: m.Component<{}> = {
       && (app.chain as Substrate).democracy.store.getAll().filter((p) => !p.completed);
     const activeProposalContent = !activeDemocracyReferenda?.length
       ? [ m('.no-proposals', 'None') ]
-      : (activeDemocracyReferenda || []).map((proposal) => m(ProposalRow, { proposal }));
+      : (activeDemocracyReferenda || []).map((proposal) => m(ProposalRow, { proposal, title: true }));
 
     // inactive proposals
     const inactiveDemocracyReferenda = onSubstrate
       && (app.chain as Substrate).democracy.store.getAll().filter((p) => p.completed);
     const inactiveProposalContent = !inactiveDemocracyReferenda?.length
       ? [ m('.no-proposals', 'None') ]
-      : (inactiveDemocracyReferenda || []).map((proposal) => m(ProposalRow, { proposal }));
+      : (inactiveDemocracyReferenda || []).map((proposal) => m(ProposalRow, { proposal, title: true }));
 
     return m(Sublayout, {
       class: 'ReferendaPage',

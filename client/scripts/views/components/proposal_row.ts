@@ -211,6 +211,7 @@ const ProposalPieChart: m.Component<IPieChartAttrs, IPieChartState> = {
 
 interface IRowAttrs {
   proposal: AnyProposal;
+  title?: boolean;
 }
 
 const ProposalRow: m.Component<IRowAttrs> = {
