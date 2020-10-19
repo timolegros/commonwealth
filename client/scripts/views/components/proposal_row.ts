@@ -23,13 +23,14 @@ import Substrate from 'controllers/chain/substrate/main';
 import User from 'views/components/widgets/user';
 import { ProposalType, proposalSlugToFriendlyName } from 'identifiers';
 import { SubstrateTreasuryProposal } from 'client/scripts/controllers/chain/substrate/treasury_proposal';
-import { SubstrateCollectiveProposal } from 'client/scripts/controllers/chain/substrate/collective_proposal';
 import SubstrateDemocracyProposal from 'client/scripts/controllers/chain/substrate/democracy_proposal';
 import MolochProposal, { MolochProposalState } from 'controllers/chain/ethereum/moloch/proposal';
 import { Icon, Icons, Grid, Col, PopoverMenu, MenuItem } from 'construct-ui';
+import { notifyError, notifySuccess } from 'controllers/app/notifications';
 import ReactionButton, { ReactionType } from './reaction_button';
 import ListingRow from './listing_row';
 import UserGallery from './widgets/user_gallery';
+import SimpleInputModal from '../modals/simple_input_modal';
 
 export const formatProposalHashShort = (pHash : string) => {
   if (!pHash) return;
@@ -332,6 +333,18 @@ const ProposalRow: m.Component<IRowAttrs> = {
               onclick: (e) => {
                 e.preventDefault();
                 // TODO: Title-setting logic
+                try {
+                  app.modals.create({
+                    modal: SimpleInputModal,
+                    data: {
+                      title: `Set ${slug} title`,
+                      callback: () => null, // TODO
+                    }
+                  });
+                  notifySuccess('Title set.');
+                } catch (err) {
+                  notifyError(err);
+                }
               },
               label: 'Set title'
             })
