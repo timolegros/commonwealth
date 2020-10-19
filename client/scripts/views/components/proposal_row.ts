@@ -26,7 +26,7 @@ import { SubstrateTreasuryProposal } from 'client/scripts/controllers/chain/subs
 import { SubstrateCollectiveProposal } from 'client/scripts/controllers/chain/substrate/collective_proposal';
 import SubstrateDemocracyProposal from 'client/scripts/controllers/chain/substrate/democracy_proposal';
 import MolochProposal, { MolochProposalState } from 'controllers/chain/ethereum/moloch/proposal';
-import { Icon, Icons, Grid, Col } from 'construct-ui';
+import { Icon, Icons, Grid, Col, PopoverMenu, MenuItem } from 'construct-ui';
 import ReactionButton, { ReactionType } from './reaction_button';
 import ListingRow from './listing_row';
 import UserGallery from './widgets/user_gallery';
@@ -302,7 +302,27 @@ const ProposalRow: m.Component<IRowAttrs> = {
         ? m('.last-updated', 'Active')
         : createdAt && createdAt instanceof moment
           ? m('.last-updated', formatLastUpdated(proposal.createdAt))
-          : null
+          : null,
+      vnode.attrs.title
+        && m(PopoverMenu, {
+          transitionDuration: 0,
+          closeOnOutsideClick: true,
+          closeOnContentClick: true,
+          menuAttrs: {},
+          content: [
+            m(MenuItem, {
+              onclick: (e) => {
+                e.preventDefault();
+                // TODO: Title-setting logic
+              },
+              label: 'Set title'
+            })
+          ],
+          inline: true,
+          trigger: m(Icon, {
+            name: Icons.CHEVRON_DOWN,
+          }),
+        })
     ];
 
     const regularProposal = (slug !== ProposalType.SubstrateTreasuryProposal)
