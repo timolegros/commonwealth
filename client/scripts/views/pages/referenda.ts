@@ -9,11 +9,13 @@ import { ProposalType } from 'identifiers';
 import { ChainBase } from 'models';
 import Sublayout from 'views/sublayout';
 import PageLoading from 'views/pages/loading';
+import ProposalsLoadingRow from 'views/components/proposals_loading_row';
 import ProposalRow from 'views/components/proposal_row';
 import { CountdownUntilBlock } from 'views/components/countdown';
 import Substrate from 'controllers/chain/substrate/main';
 import { Grid, Col } from 'construct-ui';
 import Listing from './listing';
+import ErrorPage from './error';
 
 const SubstrateProposalStats: m.Component<{}, {}> = {
   view: (vnode) => {
@@ -49,6 +51,20 @@ const SubstrateProposalStats: m.Component<{}, {}> = {
   }
 };
 
+async function loadCmd() {
+  if (!app || !app.chain || !app.chain.loaded) {
+    throw new Error('secondary loading cmd called before chain load');
+  }
+  if (app.chain.base !== ChainBase.Substrate) {
+    return;
+  }
+  const chain = (app.chain as Substrate);
+  await Promise.all([
+    chain.democracy.init(chain.chain, chain.accounts),
+    chain.democracyProposals.init(chain.chain, chain.accounts),
+  ]);
+}
+
 const ReferendaPage: m.Component<{}> = {
   oncreate: (vnode) => {
     mixpanel.track('PageVisit', { 'Page Name': 'ReferendaPage' });
@@ -65,8 +81,30 @@ const ReferendaPage: m.Component<{}> = {
     }
   },
   view: (vnode) => {
-    if (!app.chain || !app.chain.loaded) return m(PageLoading, { message: 'Connecting to chain (may take up to 30s)...', title: 'Referenda' });
+    if (!app.chain || !app.chain.loaded) {
+      if (app.chain?.base === ChainBase.Substrate && (app.chain as Substrate).chain?.timedOut) {
+        return m(ErrorPage, {
+          message: 'Chain connection timed out.',
+          title: 'Proposals',
+        });
+      }
+      return m(PageLoading, {
+        message: 'Connecting to chain (may take up to 10s)...',
+        title: 'Referenda',
+        showNewProposalButton: true,
+      });
+    }
     const onSubstrate = app.chain && app.chain.base === ChainBase.Substrate;
+    if (onSubstrate) {
+      if (!(app.chain as Substrate).democracy.initialized || !(app.chain as Substrate).democracyProposals.initialized) {
+        if (!(app.chain as Substrate).democracy.initializing) loadCmd();
+        return m(PageLoading, {
+          message: 'Connecting to chain (may take up to 10s)...',
+          title: 'Referenda',
+          showNewProposalButton: true,
+        });
+      }
+    }
 
     // active proposals
     const activeDemocracyReferenda = onSubstrate

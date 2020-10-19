@@ -3,10 +3,10 @@
 
 .ListingSidebar {
     margin: 10px 20px;
-    @include community-info-module-styles();
 
     .user-activity-header,
-    .forum-activity-header {
+    .forum-activity-header,
+    .admins-mods-header {
         color: $text-color-lighter;
         font-weight: 500;
         font-size: 15px;
@@ -52,16 +52,17 @@
             }
         }
     }
-
-    .CommunityInfoModule {
-        position: absolute;
-        bottom: 14px;
-        left: 0px;
-        margin: 0 15px;
-
-        // background
-        background: $background-color-light-hover;
-        padding: 16px 18px;
-        border-radius: 4px;
+    .admins-mods {
+        margin-bottom: 20px;
+        .User {
+            padding: 5px 0;
+        }
+        .User .user-avatar {
+            position: relative;
+            top: 2px;
+        }
+        .username, .activity-count {
+            font-weight: 500;
+        }
     }
 }

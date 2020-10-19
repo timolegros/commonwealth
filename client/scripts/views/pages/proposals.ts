@@ -6,10 +6,11 @@ import mixpanel from 'mixpanel-browser';
 import app from 'state';
 import { blockperiodToDuration } from 'helpers';
 import { ProposalType } from 'identifiers';
-import { ChainClass, ChainBase } from 'models';
+import { ChainClass, ChainBase, ChainNetwork } from 'models';
 import Edgeware from 'controllers/chain/edgeware/main';
 import Sublayout from 'views/sublayout';
 import PageLoading from 'views/pages/loading';
+import ProposalsLoadingRow from 'views/components/proposals_loading_row';
 import ProposalRow from 'views/components/proposal_row';
 import { CountdownUntilBlock } from 'views/components/countdown';
 import Substrate from 'controllers/chain/substrate/main';
@@ -17,6 +18,7 @@ import Cosmos from 'controllers/chain/cosmos/main';
 import Moloch from 'controllers/chain/ethereum/moloch/adapter';
 import { Grid, Col } from 'construct-ui';
 import Listing from './listing';
+import ErrorPage from './error';
 
 const SubstrateProposalStats: m.Component<{}, {}> = {
   view: (vnode) => {
@@ -70,6 +72,22 @@ const SubstrateProposalStats: m.Component<{}, {}> = {
   }
 };
 
+async function loadCmd() {
+  if (!app || !app.chain || !app.chain.loaded) {
+    throw new Error('secondary loading cmd called before chain load');
+  }
+  if (app.chain.base !== ChainBase.Substrate) {
+    return;
+  }
+  const chain = (app.chain as Substrate);
+  await Promise.all([
+    chain.council.init(chain.chain, chain.accounts),
+    chain.signaling.init(chain.chain, chain.accounts),
+    chain.democracyProposals.init(chain.chain, chain.accounts),
+    chain.democracy.init(chain.chain, chain.accounts),
+  ]);
+}
+
 const ProposalsPage: m.Component<{}> = {
   oncreate: (vnode) => {
     mixpanel.track('PageVisit', { 'Page Name': 'ProposalsPage' });
@@ -86,10 +104,35 @@ const ProposalsPage: m.Component<{}> = {
     }
   },
   view: (vnode) => {
-    if (!app.chain || !app.chain.loaded) return m(PageLoading, { message: 'Connecting to chain (may take up to 30s)...', title: 'Proposals' });
+    if (!app.chain || !app.chain.loaded) {
+      if (app.chain?.base === ChainBase.Substrate && (app.chain as Substrate).chain?.timedOut) {
+        return m(ErrorPage, {
+          message: 'Chain connection timed out.',
+          title: 'Proposals',
+        });
+      }
+      return m(PageLoading, {
+        message: 'Connecting to chain (may take up to 10s)...',
+        title: 'Proposals',
+        showNewProposalButton: true,
+      });
+    }
     const onSubstrate = app.chain && app.chain.base === ChainBase.Substrate;
     const onMoloch = app.chain && app.chain.class === ChainClass.Moloch;
 
+    if (onSubstrate) {
+      // Democracy, Council, and Signaling (Edgeware-only) must be loaded to proceed
+      const chain = app.chain as Substrate;
+      if (!chain.democracy.initialized || !chain.council.initialized || !chain.democracyProposals.initialized
+          || (!chain.signaling.disabled && !chain.signaling.initialized)) {
+        if (!chain.democracy.initializing) loadCmd();
+        return m(PageLoading, {
+          message: 'Connecting to chain (may take up to 10s)...',
+          title: 'Proposals',
+          showNewProposalButton: true,
+        });
+      }
+    }
     // active proposals
     const activeDemocracyProposals = onSubstrate
       && (app.chain as Substrate).democracyProposals.store.getAll().filter((p) => !p.completed);

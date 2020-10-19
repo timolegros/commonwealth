@@ -9,7 +9,7 @@ import NotificationRow from 'views/components/notification_row';
 import { Notification } from 'models';
 import { sortNotifications } from 'helpers/notifications';
 
-const NotificationButtons: m.Component = {
+const NotificationButtons: m.Component<{}> = {
   view: (vnode) => {
     const notifications = app.user.notifications.notifications;
     return m(ButtonGroup, {
@@ -26,10 +26,10 @@ const NotificationButtons: m.Component = {
         },
       }),
       m(Button, {
-        label: 'Configure notifications',
+        label: 'See all',
         onclick: () => (app.activeChainId() || app.activeCommunityId())
-          ? m.route.set(`/${app.activeChainId() || app.activeCommunityId()}/notifications`)
-          : m.route.set('/notifications'),
+          ? m.route.set(`/${app.activeChainId() || app.activeCommunityId()}/notificationsList`)
+          : m.route.set('/notificationsList'),
       }),
     ]);
   }
