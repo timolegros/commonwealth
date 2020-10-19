@@ -7,6 +7,7 @@ import { ChainEventAttributes } from './chain_event';
 export interface ChainEntityAttributes {
   id?: number;
   chain: string;
+  title: string;
   type: string;
   type_id: string;
   thread_id?: number;
@@ -34,6 +35,7 @@ export default (
   const ChainEntity = sequelize.define<ChainEntityInstance, ChainEntityAttributes>('ChainEntity', {
     id: { type: dataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     chain: { type: dataTypes.STRING, allowNull: false },
+    title: { type: dataTypes.TEXT, allowNull: true },
     type: { type: dataTypes.STRING, allowNull: false },
     type_id: { type: dataTypes.STRING, allowNull: false },
     thread_id: { type: dataTypes.INTEGER, allowNull: true },
