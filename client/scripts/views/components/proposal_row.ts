@@ -238,6 +238,23 @@ const ProposalRow: m.Component<IRowAttrs> = {
       supportText = null;
     }
 
+    const isAuthor = app.user.activeAccount
+      && (proposal.author.address === app.user.activeAccount.address);
+
+    const hasAdminPermissions = app.user.activeAccount
+      && (app.user.isRoleOfCommunity({
+        role: 'admin',
+        chain: app.activeChainId(),
+        community: app.activeCommunityId()
+      })
+      || app.user.isRoleOfCommunity({
+        role: 'moderator',
+        chain: app.activeChainId(),
+        community: app.activeCommunityId()
+      }));
+
+    const hasTitlePermissions = isAuthor || hasAdminPermissions;
+
     const proposalLink = `/${app.activeChainId()}/proposal/${proposal.slug}/${proposal.identifier}`
       + `-${slugify(proposal.title)}`;
 
@@ -304,6 +321,7 @@ const ProposalRow: m.Component<IRowAttrs> = {
           ? m('.last-updated', formatLastUpdated(proposal.createdAt))
           : null,
       vnode.attrs.title
+        && hasTitlePermissions
         && m(PopoverMenu, {
           transitionDuration: 0,
           closeOnOutsideClick: true,
