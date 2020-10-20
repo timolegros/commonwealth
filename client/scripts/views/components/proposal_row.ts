@@ -278,7 +278,7 @@ const ProposalRow: m.Component<IRowAttrs> = {
     }
 
     const isAuthor = app.user.activeAccount
-      && (proposal.author.address === app.user.activeAccount.address);
+      && (proposal.author?.address === app.user.activeAccount?.address);
 
     const hasAdminPermissions = app.user.activeAccount
       && (app.user.isRoleOfCommunity({
@@ -293,6 +293,7 @@ const ProposalRow: m.Component<IRowAttrs> = {
       }));
 
     const hasTitlePermissions = isAuthor || hasAdminPermissions;
+    console.log({ isAuthor, hasAdminPermissions, hasTitlePermissions });
 
     const proposalLink = `/${app.activeChainId()}/proposal/${proposal.slug}/${proposal.identifier}`
       + `-${slugify(proposal.title)}`;
@@ -383,55 +384,57 @@ const ProposalRow: m.Component<IRowAttrs> = {
       : null;
 
     const treasuryProposal = (slug === ProposalType.SubstrateTreasuryProposal)
-      ? m('.TreasuryRow', {
-        onclick: (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          localStorage[`${app.activeId()}-proposals-scrollY`] = window.scrollY;
-          m.route.set(proposalLink);
-        },
-      }, [
+      ? m('.TreasuryRow', [
         m('.treasury-row-title', proposal.title),
-        m(Grid, [
-          m(Col, { span: 3 }, [
-            m('.treasury-row-subheading', 'Value'),
-            m('.treasury-row-metadata', (proposal as SubstrateTreasuryProposal).value.format(true)),
-          ]),
-          m(Col, { span: 3 }, [
-            m('.treasury-row-subheading', 'Bond'),
-            m('.treasury-row-metadata', (proposal as SubstrateTreasuryProposal).bond.format(true))
-          ]),
-          m(Col, { span: 3 }, [
-            m('.treasury-row-subheading', 'Author'),
-            m('.treasury-row-metadata .treasury-user', [
-              m(User, {
-                user: new AddressInfo(
-                  null,
-                  (proposal as SubstrateTreasuryProposal).beneficiaryAddress,
-                  app.chain.id,
-                  null
-                ),
-                hideAvatar: true,
-                popover: true,
-              }),
+        m('.treasury-row-horizontal-wrap', [
+          m(Grid, {
+            onclick: (e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              localStorage[`${app.activeId()}-proposals-scrollY`] = window.scrollY;
+              m.route.set(proposalLink);
+            },
+          }, [
+            m(Col, { span: 3 }, [
+              m('.treasury-row-subheading', 'Value'),
+              m('.treasury-row-metadata', (proposal as SubstrateTreasuryProposal).value.format(true)),
             ]),
-            m('.treasury-row-metadata .treasury-user-mobile', [
-              m(User, {
-                user: new AddressInfo(
-                  null,
-                  (proposal as SubstrateTreasuryProposal).beneficiaryAddress,
-                  app.chain.id,
-                  null
-                ),
-                hideAvatar: true,
-                popover: true,
-              }),
+            m(Col, { span: 3 }, [
+              m('.treasury-row-subheading', 'Bond'),
+              m('.treasury-row-metadata', (proposal as SubstrateTreasuryProposal).bond.format(true))
+            ]),
+            m(Col, { span: 3 }, [
+              m('.treasury-row-subheading', 'Author'),
+              m('.treasury-row-metadata .treasury-user', [
+                m(User, {
+                  user: new AddressInfo(
+                    null,
+                    (proposal as SubstrateTreasuryProposal).beneficiaryAddress,
+                    app.chain.id,
+                    null
+                  ),
+                  hideAvatar: true,
+                  popover: true,
+                }),
+              ]),
+              m('.treasury-row-metadata .treasury-user-mobile', [
+                m(User, {
+                  user: new AddressInfo(
+                    null,
+                    (proposal as SubstrateTreasuryProposal).beneficiaryAddress,
+                    app.chain.id,
+                    null
+                  ),
+                  hideAvatar: true,
+                  popover: true,
+                }),
+              ]),
             ]),
           ]),
           vnode.attrs.title
             && hasTitlePermissions
             && m(ProposalRowMenu, { proposal })
-        ])
+        ]),
       ])
       : null;
 

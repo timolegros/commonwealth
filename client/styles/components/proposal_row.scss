@@ -90,7 +90,12 @@ $text-size-item-meta: 17px;
         text-decoration: none;
         font-weight: 500;
     }
+    .treasury-row-horizontal-wrap {
+        display: flex;
+        justify-content: space-between;
+    }
     .cui-grid {
+        flex: 19;
         margin-top: 3px;
         .treasury-row-subheading {
             font-size: 0.94rem;
@@ -126,5 +131,8 @@ $text-size-item-meta: 17px;
                 }
             }
         }
+    }
+    .proposal-row-menu {
+        flex: 1;
     }
 }
