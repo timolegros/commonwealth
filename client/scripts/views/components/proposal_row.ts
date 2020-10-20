@@ -214,38 +214,46 @@ const ProposalRowMenu: m.Component<{ proposal }, {}> = {
   view: (vnode) => {
     const { proposal } = vnode.attrs;
     const { slug } = proposal;
-    return m(PopoverMenu, {
-      class: 'proposal-row-menu',
-      transitionDuration: 0,
-      closeOnOutsideClick: true,
-      closeOnContentClick: true,
-      menuAttrs: {},
-      content: [
-        m(MenuItem, {
-          onclick: (e) => {
-            e.preventDefault();
-            // TODO: Title-setting logic
-            try {
-              app.modals.create({
-                modal: SimpleInputModal,
-                data: {
-                  title: `Set ${slug} title`,
-                  callback: () => null, // TODO
-                }
-              });
-              notifySuccess('Title set.');
-            } catch (err) {
-              notifyError(err);
-            }
-          },
-          label: 'Set title'
-        })
-      ],
-      inline: true,
-      trigger: m(Icon, {
-        name: Icons.CHEVRON_DOWN,
-      }),
-    });
+    return m('.ProposalRowMenu', {
+      onclick: (e) => {
+        // prevent clicks from propagating to discussion row
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, [
+      m(PopoverMenu, {
+        class: 'proposal-row-menu',
+        transitionDuration: 0,
+        closeOnOutsideClick: true,
+        closeOnContentClick: true,
+        menuAttrs: {},
+        content: [
+          m(MenuItem, {
+            onclick: (e) => {
+              e.preventDefault();
+              // TODO: Title-setting logic
+              try {
+                app.modals.create({
+                  modal: SimpleInputModal,
+                  data: {
+                    title: `Set ${slug} title`,
+                    callback: () => null, // TODO
+                  }
+                });
+                notifySuccess('Title set.');
+              } catch (err) {
+                notifyError(err);
+              }
+            },
+            label: 'Set title'
+          })
+        ],
+        inline: true,
+        trigger: m(Icon, {
+          name: Icons.CHEVRON_DOWN,
+        }),
+      })
+    ]);
   }
 };
 
@@ -374,7 +382,7 @@ const ProposalRow: m.Component<IRowAttrs> = {
           subheader: m('.proposal-row-sub', [rowSubheader, rowComments]),
         },
         contentRight: rowMetadata,
-        rightColSpacing: [4, 4, 4],
+        rightColSpacing: [4, 4, 3, 1],
         onclick: (e) => {
           e.stopPropagation();
           e.preventDefault();

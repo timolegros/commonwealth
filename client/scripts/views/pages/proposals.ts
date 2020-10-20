@@ -201,12 +201,12 @@ const ProposalsPage: m.Component<{}> = {
       m(Listing, {
         content: activeProposalContent,
         columnHeaders: ['Active Proposals', 'Comments', 'Likes', 'Updated'],
-        rightColSpacing: [4, 4, 4]
+        rightColSpacing: [4, 4, 3, 1]
       }),
       m(Listing, {
         content: inactiveProposalContent,
         columnHeaders: ['Inactive Proposals', 'Comments', 'Likes', 'Updated'],
-        rightColSpacing: [4, 4, 4]
+        rightColSpacing: [4, 4, 3, 1]
       }),
     ]);
   }
