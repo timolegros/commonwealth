@@ -1,0 +1,14 @@
+@import 'client/styles/shared';
+
+.SimpleInputModal {
+    .compact-modal-body {
+        margin-bottom: 12px;
+    }
+    .compact-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+    .cui-button {
+        width: 50%;
+    }
+}

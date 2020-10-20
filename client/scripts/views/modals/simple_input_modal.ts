@@ -1,4 +1,4 @@
-import 'modals/council_voting_modal.scss';
+import 'modals/simple_input_modal.scss';
 
 import $ from 'jquery';
 import m from 'mithril';
@@ -10,14 +10,13 @@ import { CompactModalExitButton } from '../modal';
 const SimpleInputModal = {
   view: (vnode) => {
     const { callback, title } = vnode.attrs;
-    return m('.CouncilVotingModal', [
+    return m('.SimpleInputModal', [
       m('.compact-modal-title', [
         title && m('h3', title),
         m(CompactModalExitButton),
       ]),
       m('.compact-modal-body', [
         m(Input, {
-          basic: true,
           fluid: true
         })
       ]),

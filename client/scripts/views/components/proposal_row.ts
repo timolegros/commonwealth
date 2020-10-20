@@ -215,6 +215,7 @@ const ProposalRowMenu: m.Component<{ proposal }, {}> = {
     const { proposal } = vnode.attrs;
     const { slug } = proposal;
     return m(PopoverMenu, {
+      class: 'proposal-row-menu',
       transitionDuration: 0,
       closeOnOutsideClick: true,
       closeOnContentClick: true,
