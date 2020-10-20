@@ -7,8 +7,8 @@ import { PopoverMenu, MenuDivider, Icon, Icons } from 'construct-ui';
 
 import app from 'state';
 import Sublayout from 'views/sublayout';
-import { idToProposal, ProposalType, proposalSlugToClass } from 'identifiers';
-import { slugify, isSameAccount } from 'helpers';
+import { idToProposal, ProposalType } from 'identifiers';
+import { slugify } from 'helpers';
 
 import { notifyError } from 'controllers/app/notifications';
 import { CommentParent } from 'controllers/server/comments';
@@ -19,8 +19,6 @@ import {
   OffchainTopic,
   AnyProposal,
   Account,
-  ChainBase,
-  ProposalModule,
 } from 'models';
 
 import jumpHighlightComment from 'views/pages/view_proposal/jump_to_comment';
@@ -28,7 +26,6 @@ import TopicEditor from 'views/components/topic_editor';
 import { TopicEditorButton, ThreadSubscriptionButton } from 'views/pages/discussions/discussion_row_menu';
 import ProposalVotingActions from 'views/components/proposals/voting_actions';
 import ProposalVotingResults from 'views/components/proposals/voting_results';
-import User from 'views/components/widgets/user';
 import PageLoading from 'views/pages/loading';
 import PageNotFound from 'views/pages/404';
 
@@ -56,7 +53,6 @@ interface IProposalHeaderAttrs {
 
 interface IProposalHeaderState {
   canEdit: boolean;
-  isAdmin: boolean;
   savedEdit: string;
   editing: boolean;
   saving: boolean;
@@ -69,22 +65,21 @@ interface IProposalHeaderState {
 const ProposalHeader: m.Component<IProposalHeaderAttrs, IProposalHeaderState> = {
   oninit: (vnode) => {
     const { proposal } = vnode.attrs;
-    vnode.state.isAdmin = (app.user.isRoleOfCommunity({
-      role: 'admin',
-      chain: app.activeChainId(),
-      community: app.activeCommunityId()
-    }) || app.user.isRoleOfCommunity({
-      role: 'moderator',
-      chain: app.activeChainId(),
-      community: app.activeCommunityId()
-    }));
     vnode.state.canEdit = (app.user.activeAccount?.address === proposal.author
           && app.user.activeAccount?.chain.id === (proposal as OffchainThread).authorChain)
-      || vnode.state.isAdmin;
+      || (app.user.isRoleOfCommunity({
+        role: 'admin',
+        chain: app.activeChainId(),
+        community: app.activeCommunityId()
+      }) || app.user.isRoleOfCommunity({
+        role: 'moderator',
+        chain: app.activeChainId(),
+        community: app.activeCommunityId()
+      }));
   },
   view: (vnode) => {
     const { commentCount, proposal, getSetGlobalEditingStatus, getSetGlobalReplyStatus, viewCount } = vnode.attrs;
-    const { canEdit, isAdmin } = vnode.state;
+    const { canEdit } = vnode.state;
     const isThread = proposal instanceof OffchainThread;
     const attachments = isThread ? (proposal as OffchainThread).attachments : false;
     const versionHistory = (proposal as OffchainThread).versionHistory;
@@ -124,7 +119,7 @@ const ProposalHeader: m.Component<IProposalHeaderAttrs, IProposalHeaderState> = 
                   item: proposal, getSetGlobalReplyStatus, getSetGlobalEditingStatus, parentState: vnode.state,
                 }),
                 canEdit && m(ProposalBodyDeleteMenuItem, { item: proposal }),
-                isAdmin && proposal instanceof OffchainThread && m(TopicEditorButton, {
+                canEdit && proposal instanceof OffchainThread && m(TopicEditorButton, {
                   openTopicEditor: () => {
                     vnode.state.topicEditorIsOpen = true;
                   }
@@ -302,12 +297,12 @@ const ProposalComment: m.Component<IProposalCommentAttrs, IProposalCommentState>
             && m(ProposalBodyEditor, { item: comment, parentState: vnode.state }),
         ]),
         m('.comment-body-bottom', [
-          vnode.state.editing && m('.comment-body-bottom-left', [
-            m(ProposalBodySaveEdit, { item: comment, getSetGlobalEditingStatus, parentState: vnode.state, callback }),
-            m(ProposalBodyCancelEdit, { item: comment, getSetGlobalEditingStatus, parentState: vnode.state }),
-          ]),
-          m('.comment-body-bottom-right', [
+          m('.comment-body-bottom-left', [
             !vnode.state.editing && m(ProposalBodyReaction, { item: comment }),
+          ]),
+          vnode.state.editing && m('.comment-body-bottom-right', [
+            m(ProposalBodyCancelEdit, { item: comment, getSetGlobalEditingStatus, parentState: vnode.state }),
+            m(ProposalBodySaveEdit, { item: comment, getSetGlobalEditingStatus, parentState: vnode.state, callback }),
           ]),
         ]),
       ]),
@@ -450,19 +445,6 @@ interface IPrefetch {
   }
 }
 
-async function loadCmd(type: string) {
-  if (!app || !app.chain || !app.chain.loaded) {
-    throw new Error('secondary loading cmd called before chain load');
-  }
-  if (app.chain.base !== ChainBase.Substrate) {
-    return;
-  }
-  const c = proposalSlugToClass().get(type);
-  if (c && c instanceof ProposalModule && !c.disabled) {
-    await c.init(app.chain.chain, app.chain.accounts);
-  }
-}
-
 const ViewProposalPage: m.Component<{
   identifier: string,
   type: string
@@ -501,7 +483,7 @@ const ViewProposalPage: m.Component<{
 
     // load app controller
     if (!app.threads.initialized) {
-      return m(PageLoading, { narrow: true, showNewProposalButton: true });
+      return m(PageLoading, { narrow: true });
     }
 
     // load proposal
@@ -510,17 +492,9 @@ const ViewProposalPage: m.Component<{
       proposal = idToProposal(proposalType, proposalId);
     } catch (e) {
       // proposal might be loading, if it's not an offchain thread
-      if (proposalType !== ProposalType.OffchainThread) {
-        if (!app.chain.loaded) return m(PageLoading, { narrow: true, showNewProposalButton: true });
-
-        // check if module is still initializing
-        const c = proposalSlugToClass().get(proposalType) as ProposalModule<any, any, any>;
-        if (!c.disabled && !c.initialized) {
-          if (!c.initializing) loadCmd(proposalType);
-          return m(PageLoading, { narrow: true, showNewProposalButton: true });
-        }
+      if (proposalType !== ProposalType.OffchainThread && !app.chain.loaded) {
+        return m(PageLoading, { narrow: true });
       }
-
       // proposal does not exist, 404
       return m(PageNotFound);
     }
@@ -585,10 +559,10 @@ const ViewProposalPage: m.Component<{
     }
 
     if (vnode.state.comments === undefined) {
-      return m(PageLoading, { narrow: true, showNewProposalButton: true });
+      return m(PageLoading, { narrow: true });
     }
     if (vnode.state.viewCount === undefined) {
-      return m(PageLoading, { narrow: true, showNewProposalButton: true });
+      return m(PageLoading, { narrow: true });
     }
 
     // load profiles
@@ -605,7 +579,7 @@ const ViewProposalPage: m.Component<{
       vnode.state.prefetch[identifier]['profilesStarted'] = true;
     }
     if (!app.profiles.allLoaded() && !vnode.state.prefetch[identifier]['profilesFinished']) {
-      return m(PageLoading, { narrow: true, showNewProposalButton: true });
+      return m(PageLoading, { narrow: true });
     }
     vnode.state.prefetch[identifier]['profilesFinished'] = true;
 
@@ -684,7 +658,6 @@ const ViewProposalPage: m.Component<{
     const { replyParent } = vnode.state;
     return m(Sublayout, {
       class: 'ViewProposalPage',
-      sidebarTopic: proposal instanceof OffchainThread ? proposal.topic?.id : null,
       rightSidebar: proposal instanceof OffchainThread
         ? null
         : m(ProposalSidebar, { proposal }),

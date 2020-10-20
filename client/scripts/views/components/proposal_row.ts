@@ -210,6 +210,44 @@ export const getProposalPieChart = (proposal) => typeof proposal.support === 'nu
     })
   });
 
+const ProposalRowMenu: m.Component<{ proposal }, {}> = {
+  view: (vnode) => {
+    const { proposal } = vnode.attrs;
+    const { slug } = proposal;
+    return m(PopoverMenu, {
+      transitionDuration: 0,
+      closeOnOutsideClick: true,
+      closeOnContentClick: true,
+      menuAttrs: {},
+      content: [
+        m(MenuItem, {
+          onclick: (e) => {
+            e.preventDefault();
+            // TODO: Title-setting logic
+            try {
+              app.modals.create({
+                modal: SimpleInputModal,
+                data: {
+                  title: `Set ${slug} title`,
+                  callback: () => null, // TODO
+                }
+              });
+              notifySuccess('Title set.');
+            } catch (err) {
+              notifyError(err);
+            }
+          },
+          label: 'Set title'
+        })
+      ],
+      inline: true,
+      trigger: m(Icon, {
+        name: Icons.CHEVRON_DOWN,
+      }),
+    });
+  }
+};
+
 interface IRowAttrs {
   proposal: AnyProposal;
   title?: boolean;
@@ -323,37 +361,7 @@ const ProposalRow: m.Component<IRowAttrs> = {
           : null,
       vnode.attrs.title
         && hasTitlePermissions
-        && m(PopoverMenu, {
-          transitionDuration: 0,
-          closeOnOutsideClick: true,
-          closeOnContentClick: true,
-          menuAttrs: {},
-          content: [
-            m(MenuItem, {
-              onclick: (e) => {
-                e.preventDefault();
-                // TODO: Title-setting logic
-                try {
-                  app.modals.create({
-                    modal: SimpleInputModal,
-                    data: {
-                      title: `Set ${slug} title`,
-                      callback: () => null, // TODO
-                    }
-                  });
-                  notifySuccess('Title set.');
-                } catch (err) {
-                  notifyError(err);
-                }
-              },
-              label: 'Set title'
-            })
-          ],
-          inline: true,
-          trigger: m(Icon, {
-            name: Icons.CHEVRON_DOWN,
-          }),
-        })
+        && m(ProposalRowMenu, { proposal })
     ];
 
     const regularProposal = (slug !== ProposalType.SubstrateTreasuryProposal)
@@ -419,7 +427,10 @@ const ProposalRow: m.Component<IRowAttrs> = {
                 popover: true,
               }),
             ]),
-          ])
+          ]),
+          vnode.attrs.title
+            && hasTitlePermissions
+            && m(ProposalRowMenu, { proposal })
         ])
       ])
       : null;
