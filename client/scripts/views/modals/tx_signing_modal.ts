@@ -101,7 +101,7 @@ const TXSigningCLIOption = {
       const obs = vnode.attrs.txData.transact(...args);
       obs.subscribe((txData: ITransactionResult) => {
         if (txData.status === TransactionStatus.Ready) {
-          vnode.attrs.next('WaitingToConfirmTransaction', { obs });
+          // vnode.attrs.next('WaitingToConfirmTransaction', { obs });
         } else {
           vnode.attrs.next('SentTransactionRejected', {
             error: new Error('Transaction Failed'), hash: null, err: txData.err
@@ -211,7 +211,7 @@ const TXSigningWebWalletOption = {
         const obs = vnode.attrs.txData.transact(acct.address, signer);
         obs.subscribe((txData: ITransactionResult) => {
           if (txData.status === TransactionStatus.Ready) {
-            vnode.attrs.next('WaitingToConfirmTransaction', { obs });
+            // vnode.attrs.next('WaitingToConfirmTransaction', { obs });
           } else {
             vnode.attrs.next('SentTransactionRejected', { hash: null, error: txData.err });
           }
@@ -257,7 +257,7 @@ const TXSigningSeedOrMnemonicOption = {
       const obs = vnode.attrs.txData.transact();
       obs.subscribe((txData: ITransactionResult) => {
         if (txData.status === TransactionStatus.Ready) {
-          vnode.attrs.next('WaitingToConfirmTransaction', { obs });
+          // vnode.attrs.next('WaitingToConfirmTransaction', { obs });
         } else {
           vnode.attrs.next('SentTransactionRejected', { error: txData.err, hash: null });
         }
@@ -361,108 +361,108 @@ const TXSigningModalStates = {
       ]);
     }
   },
-  WaitingToConfirmTransaction: {
-    oncreate: (vnode) => {
-      const $parent = $(vnode.dom).closest('.TXSigningModal');
+  // WaitingToConfirmTransaction: {
+  //   oncreate: (vnode) => {
+  //     const $parent = $(vnode.dom).closest('.TXSigningModal');
 
-      vnode.state.timer = 0;
-      // TODO: set a timeout? We currently have no failure case due to how event handling works.
-      vnode.state.timerHandle = setInterval(() => {
-        vnode.state.timer++;
-        m.redraw();
-      }, 1000);
-      // for edgeware mainnet, timeout after 10 sec
-      // TODO: remove this after the runtime upgrade to Substrate 2.0 rc3+
-      if (app.chain?.meta?.chain?.id === 'edgeware') {
-        vnode.state.timeoutHandle = setTimeout(() => {
-          clearInterval(vnode.state.timeoutHandle);
-          vnode.attrs.next('SentTransactionSuccess', {
-            hash: 'Not available (this chain is using an out of date API)',
-            blocknum: '--',
-            timestamp: '--',
-          });
-          $parent.trigger('modalcomplete');
-        }, 10000);
-      }
+  //     vnode.state.timer = 0;
+  //     // TODO: set a timeout? We currently have no failure case due to how event handling works.
+  //     vnode.state.timerHandle = setInterval(() => {
+  //       vnode.state.timer++;
+  //       m.redraw();
+  //     }, 1000);
+  //     // for edgeware mainnet, timeout after 10 sec
+  //     // TODO: remove this after the runtime upgrade to Substrate 2.0 rc3+
+  //     if (app.chain?.meta?.chain?.id === 'edgeware') {
+  //       vnode.state.timeoutHandle = setTimeout(() => {
+  //         clearInterval(vnode.state.timeoutHandle);
+  //         vnode.attrs.next('SentTransactionSuccess', {
+  //           hash: 'Not available (this chain is using an out of date API)',
+  //           blocknum: '--',
+  //           timestamp: '--',
+  //         });
+  //         $parent.trigger('modalcomplete');
+  //       }, 10000);
+  //     }
 
-      vnode.attrs.stateData.obs.subscribe((data: ITransactionResult) => {
-        if (data.status === TransactionStatus.Success) {
-          vnode.attrs.next('SentTransactionSuccess', {
-            hash: data.hash,
-            blocknum: data.blocknum,
-            timestamp: data.timestamp
-          });
-          $parent.trigger('modalcomplete');
-        }
-        // the transaction may be submitted twice, so only go to a
-        // failure state if transaction has not already succeeded
-        if (vnode.state.stateName !== 'SentTransactionRejected'
-            && (data.status === TransactionStatus.Failed || data.status === TransactionStatus.Error)) {
-          if (vnode.state.timerHandle) {
-            clearInterval(vnode.state.timerHandle);
-          }
-          vnode.attrs.next('SentTransactionRejected', {
-            error: data.err,
-            hash: data.hash,
-            blocknum: data.blocknum,
-            timestamp: data.timestamp
-          });
-        }
-      });
-    },
-    onremove: (vnode) => {
-      if (vnode.state.timerHandle) {
-        clearInterval(vnode.state.timerHandle);
-      }
-    },
-    view: (vnode) => {
-      return m('.TXSigningModalBody.WaitingToConfirmTransaction', [
-        m('.compact-modal-title', [ m('h3', 'Confirm transaction') ]),
-        m('.compact-modal-body', [
-          m('.TXSigningBodyText', 'Waiting for your transaction to be confirmed by the network...'),
-          m('span.icon-spinner2.animate-spin'),
-          m('br'),
-          m(Button, {
-            intent: 'primary',
-            type: 'submit',
-            disabled: true,
-            fluid: true,
-            onclick: (e) => (undefined),
-            label: `Waiting ${vnode.state.timer || 0}s...`
-          }),
-        ]),
-      ]);
-    }
-  },
-  SentTransactionSuccess: {
-    view: (vnode) => {
-      return m('.TXSigningModalBody.SentTransactionSuccess', [
-        m('.compact-modal-title', [ m('h3', 'Transaction confirmed') ]),
-        m('.compact-modal-body', [
-          m(TXSigningTransactionBox, {
-            success: true,
-            status: 'Success',
-            blockHash: `${vnode.attrs.stateData.hash}`,
-            blockNum: `${vnode.attrs.stateData.blocknum}`,
-            timestamp: vnode.attrs.stateData.timestamp?.format
-              ? `${vnode.attrs.stateData.timestamp.format()}`
-              : '--',
-          }),
-          m(Button, {
-            intent: 'primary',
-            type: 'submit',
-            fluid: true,
-            oncreate: (vvnode) => $(vvnode.dom).focus(),
-            onclick: (e) => {
-              e.preventDefault();
-              $(vnode.dom).trigger('modalexit');
-            },
-            label: 'Done'
-          }),
-        ]),
-      ]);
-    }
-  },
+  //     vnode.attrs.stateData.obs.subscribe((data: ITransactionResult) => {
+  //       if (data.status === TransactionStatus.Success) {
+  //         vnode.attrs.next('SentTransactionSuccess', {
+  //           hash: data.hash,
+  //           blocknum: data.blocknum,
+  //           timestamp: data.timestamp
+  //         });
+  //         $parent.trigger('modalcomplete');
+  //       }
+  //       // the transaction may be submitted twice, so only go to a
+  //       // failure state if transaction has not already succeeded
+  //       if (vnode.state.stateName !== 'SentTransactionRejected'
+  //           && (data.status === TransactionStatus.Failed || data.status === TransactionStatus.Error)) {
+  //         if (vnode.state.timerHandle) {
+  //           clearInterval(vnode.state.timerHandle);
+  //         }
+  //         vnode.attrs.next('SentTransactionRejected', {
+  //           error: data.err,
+  //           hash: data.hash,
+  //           blocknum: data.blocknum,
+  //           timestamp: data.timestamp
+  //         });
+  //       }
+  //     });
+  //   },
+  //   onremove: (vnode) => {
+  //     if (vnode.state.timerHandle) {
+  //       clearInterval(vnode.state.timerHandle);
+  //     }
+  //   },
+  //   view: (vnode) => {
+  //     return m('.TXSigningModalBody.WaitingToConfirmTransaction', [
+  //       m('.compact-modal-title', [ m('h3', 'Confirm transaction') ]),
+  //       m('.compact-modal-body', [
+  //         m('.TXSigningBodyText', 'Waiting for your transaction to be confirmed by the network...'),
+  //         m('span.icon-spinner2.animate-spin'),
+  //         m('br'),
+  //         m(Button, {
+  //           intent: 'primary',
+  //           type: 'submit',
+  //           disabled: true,
+  //           fluid: true,
+  //           onclick: (e) => (undefined),
+  //           label: `Waiting ${vnode.state.timer || 0}s...`
+  //         }),
+  //       ]),
+  //     ]);
+  //   }
+  // },
+  // SentTransactionSuccess: {
+  //   view: (vnode) => {
+  //     return m('.TXSigningModalBody.SentTransactionSuccess', [
+  //       m('.compact-modal-title', [ m('h3', 'Transaction confirmed') ]),
+  //       m('.compact-modal-body', [
+  //         m(TXSigningTransactionBox, {
+  //           success: true,
+  //           status: 'Success',
+  //           blockHash: `${vnode.attrs.stateData.hash}`,
+  //           blockNum: `${vnode.attrs.stateData.blocknum}`,
+  //           timestamp: vnode.attrs.stateData.timestamp?.format
+  //             ? `${vnode.attrs.stateData.timestamp.format()}`
+  //             : '--',
+  //         }),
+  //         m(Button, {
+  //           intent: 'primary',
+  //           type: 'submit',
+  //           fluid: true,
+  //           oncreate: (vvnode) => $(vvnode.dom).focus(),
+  //           onclick: (e) => {
+  //             e.preventDefault();
+  //             $(vnode.dom).trigger('modalexit');
+  //           },
+  //           label: 'Done'
+  //         }),
+  //       ]),
+  //     ]);
+  //   }
+  // },
   SentTransactionRejected: {
     view: (vnode) => {
       return m('.TXSigningModalBody.SentTransactionRejected', [
@@ -511,7 +511,7 @@ const TXSigningModal = {
     const DEFAULT_STATE = 'Intro';
     return [
       m('.TXSigningModal', [
-        m(TXSigningModalStates[vnode.state.stateName || DEFAULT_STATE], {
+        m(TXSigningModalStates[DEFAULT_STATE], {
           // pass transaction down to each step's view
           author: vnode.attrs.author,
           txType: vnode.attrs.txType,
@@ -538,7 +538,14 @@ export const createTXModal = async (dataP: ITXModalData | Promise<ITXModalData>)
       let complete = false;
       app.modals.create({
         modal: TXSigningModal,
-        completeCallback: () => { complete = true; },
+        completeCallback: () => {
+          let time = 0;
+          const timer = setInterval(() => {
+            time++;
+            app.toasts.createInfo('Transaction pending...' + time);
+          }, 1000);
+          complete = true;
+        },
         exitCallback: () => {
           if (data.cb) {
             data.cb(complete);
