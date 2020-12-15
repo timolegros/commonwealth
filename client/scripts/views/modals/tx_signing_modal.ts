@@ -17,6 +17,7 @@ import AddressSwapper from 'views/components/addresses/address_swapper';
 import CodeBlock from 'views/components/widgets/code_block';
 import HorizontalTabs from 'views/components/widgets/horizontal_tabs';
 import { CompactModalExitButton } from 'views/modal';
+import { notifyError } from 'controllers/app/notifications';
 
 const createProposalTransactionLabels = {
   // substrate: accounts
@@ -103,9 +104,10 @@ const TXSigningCLIOption = {
         if (txData.status === TransactionStatus.Ready) {
           // vnode.attrs.next('WaitingToConfirmTransaction', { obs });
         } else {
-          vnode.attrs.next('SentTransactionRejected', {
-            error: new Error('Transaction Failed'), hash: null, err: txData.err
-          });
+          notifyError(`Transaction failed: ${txData.err}`);
+          // vnode.attrs.next('SentTransactionRejected', {
+          //   error: new Error('Transaction Failed'), hash: null, err: txData.err
+          // });
         }
       });
     };
@@ -213,7 +215,8 @@ const TXSigningWebWalletOption = {
           if (txData.status === TransactionStatus.Ready) {
             // vnode.attrs.next('WaitingToConfirmTransaction', { obs });
           } else {
-            vnode.attrs.next('SentTransactionRejected', { hash: null, error: txData.err });
+            notifyError(`Transaction failed: ${txData.err}`);
+            // vnode.attrs.next('SentTransactionRejected', { hash: null, error: txData.err });
           }
         });
       } catch (e) { console.log(e); }
@@ -259,7 +262,8 @@ const TXSigningSeedOrMnemonicOption = {
         if (txData.status === TransactionStatus.Ready) {
           // vnode.attrs.next('WaitingToConfirmTransaction', { obs });
         } else {
-          vnode.attrs.next('SentTransactionRejected', { error: txData.err, hash: null });
+          notifyError(`Transaction failed: ${txData.err}`);
+          // vnode.attrs.next('SentTransactionRejected', { error: txData.err, hash: null });
         }
       });
     };
@@ -329,7 +333,7 @@ const TXSigningModalStates = {
             content: m(TXSigningWebWalletOption, {
               txData: vnode.attrs.txData,
               author: vnode.attrs.author,
-              next: vnode.attrs.next,
+              // next: vnode.attrs.next,
             }),
             selected: app.chain.base === ChainBase.Substrate
               && !(vnode.attrs.author.getSeed() || vnode.attrs.author.getMnemonic())
@@ -343,14 +347,14 @@ const TXSigningModalStates = {
             content: m(TXSigningCLIOption, {
               txData: vnode.attrs.txData,
               author: vnode.attrs.author,
-              next: vnode.attrs.next,
+              // next: vnode.attrs.next,
             }),
           }, {
             name: 'Key phrase',
             content: m(TXSigningSeedOrMnemonicOption, {
               txData: vnode.attrs.txData,
               author: vnode.attrs.author,
-              next: vnode.attrs.next,
+              // next: vnode.attrs.next,
             }),
             // select mnemonic if the account is already unlocked
             selected: app.chain.base === ChainBase.Substrate
@@ -463,47 +467,47 @@ const TXSigningModalStates = {
   //     ]);
   //   }
   // },
-  SentTransactionRejected: {
-    view: (vnode) => {
-      return m('.TXSigningModalBody.SentTransactionRejected', [
-        m('.compact-modal-title', [ m('h3', 'Transaction rejected') ]),
-        m('.compact-modal-body', [
-          m(TXSigningTransactionBox, {
-            success: false,
-            status: vnode.attrs.stateData.error,
-            blockHash: vnode.attrs.stateData.hash ? `${vnode.attrs.stateData.hash}` : '--',
-            blockNum: vnode.attrs.stateData.blocknum ? `${vnode.attrs.stateData.blocknum}` : '--',
-            timestamp: vnode.attrs.stateData.timestamp ? `${vnode.attrs.stateData.timestamp.format()}` : '--',
-          }),
-          m(Grid, [
-            m(Col, { span: 6 }, [
-              m(Button, {
-                intent: 'primary',
-                type: 'submit',
-                style: 'margin-right: 10px',
-                fluid: true,
-                onclick: (e) => {
-                  e.preventDefault();
-                  $(vnode.dom).trigger('modalexit');
-                },
-                label: 'Done'
-              }),
-            ]),
-            m(Col, { span: 6 }, [
-              m(Button, {
-                intent: 'none',
-                fluid: true,
-                style: 'margin-left: 10px',
-                oncreate: (vvnode) => $(vvnode.dom).focus(),
-                onclick: (e) => { vnode.attrs.next('Intro'); },
-                label: 'Try again'
-              }),
-            ]),
-          ]),
-        ]),
-      ]);
-    }
-  },
+  // SentTransactionRejected: {
+  //   view: (vnode) => {
+  //     return m('.TXSigningModalBody.SentTransactionRejected', [
+  //       m('.compact-modal-title', [ m('h3', 'Transaction rejected') ]),
+  //       m('.compact-modal-body', [
+  //         m(TXSigningTransactionBox, {
+  //           success: false,
+  //           status: vnode.attrs.stateData.error,
+  //           blockHash: vnode.attrs.stateData.hash ? `${vnode.attrs.stateData.hash}` : '--',
+  //           blockNum: vnode.attrs.stateData.blocknum ? `${vnode.attrs.stateData.blocknum}` : '--',
+  //           timestamp: vnode.attrs.stateData.timestamp ? `${vnode.attrs.stateData.timestamp.format()}` : '--',
+  //         }),
+  //         m(Grid, [
+  //           m(Col, { span: 6 }, [
+  //             m(Button, {
+  //               intent: 'primary',
+  //               type: 'submit',
+  //               style: 'margin-right: 10px',
+  //               fluid: true,
+  //               onclick: (e) => {
+  //                 e.preventDefault();
+  //                 $(vnode.dom).trigger('modalexit');
+  //               },
+  //               label: 'Done'
+  //             }),
+  //           ]),
+  //           m(Col, { span: 6 }, [
+  //             m(Button, {
+  //               intent: 'none',
+  //               fluid: true,
+  //               style: 'margin-left: 10px',
+  //               oncreate: (vvnode) => $(vvnode.dom).focus(),
+  //               onclick: (e) => { vnode.attrs.next('Intro'); },
+  //               label: 'Try again'
+  //             }),
+  //           ]),
+  //         ]),
+  //       ]),
+  //     ]);
+  //   }
+  // },
 };
 
 const TXSigningModal = {
@@ -520,11 +524,11 @@ const TXSigningModal = {
           stateName: vnode.state.stateName,
           stateData: vnode.state.data,
           // handle state transitions
-          next: (newState, newData) => {
-            vnode.state.stateName = newState;
-            vnode.state.data = newData;
-            m.redraw();
-          }
+          // next: (newState, newData) => {
+          //   vnode.state.stateName = newState;
+          //   vnode.state.data = newData;
+          //   m.redraw();
+          // }
         }),
       ])
     ];
@@ -542,7 +546,7 @@ export const createTXModal = async (dataP: ITXModalData | Promise<ITXModalData>)
           let time = 0;
           const timer = setInterval(() => {
             time++;
-            app.toasts.createInfo('Transaction pending...' + time);
+            app.toasts.createInfo(`Transaction pending... ${time}`);
           }, 1000);
           complete = true;
         },
