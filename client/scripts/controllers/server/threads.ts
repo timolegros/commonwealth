@@ -32,6 +32,7 @@ export const modelFromServer = (thread) => {
     thread.chain,
     thread.read_only,
     decodeURIComponent(thread.body),
+    thread.plaintext,
     thread.url,
     thread.Address.chain,
     thread.pinned,
@@ -167,7 +168,7 @@ class ThreadsController {
       success: (response) => {
         const result = modelFromServer(response.result);
         // Post edits propagate to all thread stores
-        this._store.update(result, (t) => t.id === result.id);
+        this._store.update(result);
         this._listingStore.update(result);
         return result;
       },
