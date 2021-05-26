@@ -38,6 +38,7 @@ const CollectivesPage: m.Component<{}> = {
     if (!app.chain || !app.chain.loaded) {
       return m(PageLoading, {
         message: 'Connecting to chain',
+        showTimer: true,
         title: 'Collectives',
         showNewProposalButton: true,
       });

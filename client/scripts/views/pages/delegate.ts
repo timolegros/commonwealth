@@ -151,6 +151,7 @@ const DelegatePage: m.Component<{}> = {
       // chain loading
       return m(PageLoading, {
         message: 'Connecting to chain',
+        showTimer: true,
         title: 'Delegate',
       });
     }

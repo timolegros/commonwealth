@@ -120,6 +120,7 @@ const TreasuryPage: m.Component<{}> = {
       }
       return m(PageLoading, {
         message: 'Connecting to chain',
+        showTimer: true,
         title: [
           'Treasury',
           m(Tag, { size: 'xs', label: 'Beta', style: 'position: relative; top: -2px; margin-left: 6px' })

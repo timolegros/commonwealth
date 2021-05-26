@@ -163,6 +163,7 @@ const ProposalsPage: m.Component<{}> = {
       });
       return m(PageLoading, {
         message: 'Connecting to chain',
+        showTimer: true,
         title: [
           'Proposals',
           m(Tag, { size: 'xs', label: 'Beta', style: 'position: relative; top: -2px; margin-left: 6px' })

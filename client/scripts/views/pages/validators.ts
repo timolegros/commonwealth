@@ -65,6 +65,7 @@ const ValidatorsPage: m.Component<{}, { validators, totalStaked, validatorsIniti
       }
       return m(PageLoading, {
         message: 'Connecting to chain',
+        showTimer: true,
         title: [
           'Validators',
           m(Tag, { size: 'xs', label: 'Beta', style: 'position: relative; top: -2px; margin-left: 6px' })

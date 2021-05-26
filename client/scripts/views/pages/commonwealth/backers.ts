@@ -11,6 +11,7 @@
 //     if (!app.chain || !app.chain.loaded) {
 //       return m(PageLoading, {
 //         message: 'Connecting to chain',
+//         showTimer: true,
 //         title: 'Backers',
 //         showNewProposalButton: true,
 //       });
