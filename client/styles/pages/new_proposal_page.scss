@@ -9,6 +9,10 @@
     @include xs-max {
         width: initial;
     }
+    .error-text {
+        color: red;
+        margin-top: 5px;
+    }
 }
 
 .NewProposalForm {
