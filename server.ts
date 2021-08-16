@@ -38,12 +38,32 @@ import setupChainEventListeners from './server/scripts/setupChainEventListeners'
 import { fetchStats } from './server/routes/getEdgewareLockdropStats';
 import migrateIdentities from './server/scripts/migrateIdentities';
 import migrateCouncillorValidatorFlags from './server/scripts/migrateCouncillorValidatorFlags';
+import { Buckets, PrivateKey } from '@textile/hub';
+
 
 // set up express async error handling hack
 require('express-async-errors');
 
+export let bucketClient: Buckets;
+export let bucketKeys: { [key: string]: string } = {}
+
 const app = express();
 async function main() {
+
+  const user = await PrivateKey.fromRandom();
+  bucketClient = await Buckets.withKeyInfo({ key: process.env.HUB_CW_KEY });
+
+  const token = await bucketClient.getToken(user);
+
+  const result = await bucketClient.getOrCreate('Users');
+  if (!result.root) {
+    throw new Error('Failed to open bucket');
+  }
+  log.info(`IPNS address of Users bucket: ${result.root.key}`)
+  log.info(`https://ipfs.io/ipns/${result.root.key}`)
+
+  bucketKeys['Users'] = result.root.key
+
   const DEV = process.env.NODE_ENV !== 'production';
 
   // CLI parameters for which task to run
