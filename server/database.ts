@@ -46,9 +46,11 @@ import TaggedThreadFactory, { TaggedThreadModelStatic } from './models/tagged_th
 import UserModelFactory, { UserModelStatic } from './models/user';
 import WaitlistRegistrationFactory, { WaitlistRegistrationModelStatic } from './models/waitlist_registration';
 import WebhookFactory, { WebhookModelStatic } from './models/webhook';
+import BucketCache, { BucketCacheModelStatic } from './models/bucket_cache';
 
 export type Models = {
     Address: AddressModelStatic;
+    BucketCache: BucketCacheModelStatic
     Chain: ChainModelStatic;
     ChainEntity: ChainEntityModelStatic;
     ChainEvent: ChainEventModelStatic;
@@ -155,6 +157,7 @@ const models: Models = {
   User: UserModelFactory(sequelize, DataTypes),
   WaitlistRegistration: WaitlistRegistrationFactory(sequelize, DataTypes),
   Webhook: WebhookFactory(sequelize, DataTypes),
+  BucketCache: BucketCache(sequelize, DataTypes),
 };
 
 const db: DB = {

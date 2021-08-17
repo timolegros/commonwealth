@@ -29,6 +29,7 @@ const getTokenForum = async (
             symbol: token.symbol,
             name: token.name,
             base: 'ethereum',
+            has_chain_events_listener: false
           },
           transaction: t,
         });

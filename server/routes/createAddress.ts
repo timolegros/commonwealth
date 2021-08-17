@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { factory, formatFilename } from '../../shared/logging';
 import { DB } from '../database';
-import { bucketClient, bucketKeys } from '../../server';
 import fetch from 'node-fetch';
+import { Buckets, PrivateKey } from '@textile/hub';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -16,7 +16,6 @@ const createAddress = async (models: DB, req: Request, res: Response, next: Next
   // start the process of creating a new address. this may be called
   // when logged in to link a new address for an existing user, or
   // when logged out to create a new user by showing proof of an address.
-  console.log(req.body);
   if (!req.body.address) {
     return next(new Error(Errors.NeedAddress));
   }
@@ -27,7 +26,6 @@ const createAddress = async (models: DB, req: Request, res: Response, next: Next
   const chain = await models.Chain.findOne({
     where: { id: req.body.chain }
   });
-  console.log("chain:", chain);
 
   if (!chain) {
     return next(new Error(Errors.InvalidChain));
@@ -36,7 +34,6 @@ const createAddress = async (models: DB, req: Request, res: Response, next: Next
   const existingAddress = await models.Address.scope('withPrivateData').findOne({
     where: { chain: req.body.chain, address: req.body.address }
   });
-  console.log("existingAddress:", existingAddress);
 
   if (existingAddress) {
     // address already exists on another user, only take ownership if
@@ -50,12 +47,11 @@ const createAddress = async (models: DB, req: Request, res: Response, next: Next
     const updatedId = (req.user && ((!existingAddress.verified && isExpired) || isDisowned || isCurrUser))
       ? req.user.id : null;
     const updatedObj = await models.Address.updateWithToken(existingAddress, updatedId, req.body.keytype);
-    console.log(updatedObj);
 
     //TODO: add identityCache to database.ts
 
     // TODO: address changed user so update ipfs
-    if (existingAddress.id != updatedId)
+    if (existingAddress.id != updatedId) {}
 
     // even if this is the existing address, there is a case to login to community through this address's chain
     // if req.body.community is valid, then we should create a role between this community vs address
@@ -96,20 +92,28 @@ const createAddress = async (models: DB, req: Request, res: Response, next: Next
           permission: 'member',
         });
 
+        let ipfsContent = {
+          addresses: {
+            [req.body.chain]: [req.body.address]
+          },
+          twitterHandle: '',
+          roles: {
+            [req.body.community ? req.body.community : req.body.chain]: 'member'
+          }
+        }
+
+        if (req.body.community) ipfsContent['communities'] = [req.body.community];
+        else ipfsContent['communities'] = [];
+
+        const jsonData = JSON.stringify(ipfsContent);
+
         // create a new user file in ipfs
-        await bucketClient.pushPath(
-          bucketKeys.User, `${newObj.id}.json`,
-          Buffer.from(JSON.stringify({
-            addresses: {
-              [req.body.chain]: [req.body.address]
-            },
-            twitterHandle: '',
-            communities: [req.body.community ? req.body.community : ''],
-            roles: {
-              [req.body.community ? req.body.community : req.body.chain]: 'member'
-            }
-          }))
+        const temp = await bucketClient.pushPath(
+          bucketKeys.Users, `${newObj.id}.json`,
+          Buffer.from(jsonData)
         );
+        // const temp = await bucketClient.pushPath('bafzbeiamkfqyemughngc3z2grv7hykllastjzswpgimjzyrbtbyoinpgpe', 'test9.json', Buffer.from(JSON.stringify({"id": "fat L"})))
+        console.log("temp:", temp)
 
         return res.json({ status: 'Success', result: newObj.toJSON() });
       }
@@ -178,7 +182,7 @@ const createAddress = async (models: DB, req: Request, res: Response, next: Next
 
       // push to bucket
       await bucketClient.pushPath(
-        bucketKeys.User, `${req.user.id}.json`,
+        bucketKeys.Users, `${req.user.id}.json`,
         Buffer.from(JSON.stringify(content))
       );
 

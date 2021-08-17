@@ -7,24 +7,27 @@
     "allowSyntheticDefaultImports": true,
     "outDir": "./build",
     "baseUrl": ".",
-    "paths": {
-      "*": ["../*", "../shared/*", "../client/scripts/*"]
-    },
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "downlevelIteration": true,
-    "traceResolution": true,
-    "sourceMap": true
+    "traceResolution": true
   },
+  "files": [
+    "server/scripts/setupChainEventListeners.ts",
+    "server/scripts/dbNode.ts",
+  ],
   "include": [
-    "../client",
-    "../client/scripts",
-    "../shared/adapters",
-    "../",
-    "../eth/types"
+    "server/models/*",
+    "server/models/"
   ],
   "exclude": [
-    "../node_modules",
-    "../client/scripts/controllers/chain/ethereum/contracts/*"
+    "server/passport.ts",
+    "server/router.ts",
+    "server/webhookNotifier.ts",
+    "server/socket",
+    "server/migrations",
+    "node_modules",
+    "build",
+    "dist",
   ]
 }
