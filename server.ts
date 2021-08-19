@@ -38,12 +38,8 @@ import migrateIdentities from './server/scripts/migrateIdentities';
 import migrateCouncillorValidatorFlags from './server/scripts/migrateCouncillorValidatorFlags';
 import { Buckets, PrivateKey } from '@textile/hub';
 
-
 // set up express async error handling hack
 require('express-async-errors');
-
-export let bucketClient: Buckets;
-export let bucketKeys: { [key: string]: string } = {}
 
 const app = express();
 async function main() {

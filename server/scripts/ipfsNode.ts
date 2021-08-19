@@ -1,7 +1,6 @@
 import { Consumer } from '../util/rabbitmq/consumer';
 import RabbitMQConfig from '../util/rabbitmq/RabbitMQConfig';
 import { Buckets, PrivateKey } from '@textile/hub';
-import { bucketClient, bucketKeys } from '../../server';
 import { factory, formatFilename } from '../../shared/logging';
 
 const log = factory.getLogger(formatFilename(__filename));
